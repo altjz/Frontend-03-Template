@@ -7,6 +7,11 @@ function addCssRules(text) {
   rules.push(...ast.stylesheet.rules);
 }
 
+/**
+ * Computed CSS 的function，由于 parser 文件太长拆分了，调用的时候和 Winter 老师的一致，只需传入 Stack 即可
+ * @param {Element} element 元素
+ * @param {Elment[]} stack 当前 Stack
+ */
 function computeCss(element, stack) {
   // console.log(rules);
   const elements = stack.slice().reverse();
@@ -15,10 +20,10 @@ function computeCss(element, stack) {
   }
 
   let matched = true;
-  let _element = element; // 需要指定一个指针 element
-  let _elements = elements.slice(); // 指定一个 elements stack
   RuleFor:
   for (const rule of rules) {
+    let _element = element; // 需要指定一个指针 element
+    let _elements = elements.slice(); // 指定一个 elements stack
     /**
      * 只支持无空格的复合选择器，例如："img+div p~code>span"
      * "img + div p ~ code > span" 这样的暂时不支持，所以先要用正则，把多余的空格删除掉
@@ -117,7 +122,7 @@ function computeCss(element, stack) {
      */
     if (matched) {
       // console.log('rule', rule);
-      const sp = specificity(rule.selectors[0]);
+      const sp = specificity(selectorParts); // 前面已经解析过了，这里直接传进去即可
       const computedStyle = element.computedStyle;
       for (const declaration of rule.declarations) {
         if (!computedStyle[declaration.property]) {
@@ -137,13 +142,16 @@ function computeCss(element, stack) {
   }
 }
 
-function specificity(selector) {
+function specificity(selectorParts) {
   const p = [0, 0, 0, 0];
-  const selectorParts = selector.split(' ');
+  // const selectorParts = selector.split(' ');
+  /**
+   * 上层已经做了解析，直接迭代即可
+   */
   for (const part of selectorParts) {
     if (part[0] === '#') {
       p[1] += 1;
-    } else if (part[1] === '.') {
+    } else if (part[0] === '.') {
       p[2] += 1;
     } else {
       p[3] += 1;
@@ -163,6 +171,7 @@ function compare(sp1, sp2) {
   return sp1[3] - sp2[3];
 }
 
+// 支持空格的 Class 选择器 Match 函数
 function match(element, selector) {
   // console.log('selector', selector);
 
@@ -177,9 +186,9 @@ function match(element, selector) {
     const id = selector.substring(1, selector.length);
     const attr = element.attributes.find(attr => attr.name === 'id' && attr.value === id);
     return attr !== void 0;
-  } else if (selector[0] === '.') {
+  } else if (selector[0] === '.') { // Class 选择器，支持空格
     const cls = selector.substring(1, selector.length);
-    const attr = element.attributes.find(attr => attr.name === 'class' && attr.value === cls);
+    const attr = element.attributes.find(attr => attr.name === 'class' && (attr.value === cls || attr.value.split(' ').find((c) => c === cls))); // 如果 class 有多个，则 split 空格再查找
     return attr !== void 0;
   } else {
     return element.tagName === selector;
