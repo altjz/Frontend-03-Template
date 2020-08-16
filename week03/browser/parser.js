@@ -1,13 +1,14 @@
+const { addCssRules, computeCss } = require('./computed');
 const EOF = Symbol('EOF');
 
 let currentToken = null;
 let currentAttribute = null;
-let text = '';
-let stack = [{type: 'document', children: [], content: ''}];
+let stack = [{type: 'document', children: []}];
+let currentTextNode = null;
 
 function emit(token) {
-  if (token.type !== 'text')
-    console.log('token', token);
+  // if (token.type !== 'text')
+    // console.log('token', token);
   const top = stack[stack.length - 1];
 
   if (token.type === 'startTag') {
@@ -21,17 +22,32 @@ function emit(token) {
     element.parent = top;
     top.children.push(element);
 
+    computeCss(element, stack);
+
     if (!token.isSelfClosing) {
       stack.push(element);
     }
+
+    currentTextNode = null;
   } else if (token.type === 'endTag') {
     if (top.tagName !== token.tagName) {
       throw new Error('tag is not end');
     } else {
+      if (top.tagName === 'style') {
+        addCssRules(top.children[0].content);
+      }
       stack.pop();
     }
+    currentTextNode = null;
   } else if (token.type === 'text') {
-    top.content += token.content;
+    if (currentTextNode === null) {
+      currentTextNode = {
+        type: 'text',
+        content: '',
+      };
+      top.children.push(currentTextNode);
+    }
+    currentTextNode.content += token.content;
   }
 }
 
@@ -198,7 +214,8 @@ function parseHtml(html) {
     state = state(c);
   }
   state = state(EOF);
-  console.log(stack[0]);
+  return stack[0];
+  // console.log(stack[0]);
 }
 
 module.exports = parseHtml;

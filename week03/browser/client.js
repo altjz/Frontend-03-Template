@@ -212,7 +212,23 @@ async function makeRequest() {
   });
   const response = await request.send();
   const dom = parser(response.body);
-  console.log(dom);
+  
+  // 由于 DOM 结构是有循环引用，因此要把循环引用的 key 去掉，参照 司徒正美的处理： https://www.cnblogs.com/rubylouvre/p/6814431.html
+  let cache = [];
+  const domString = JSON.stringify(dom, function(key, value) {
+      if (typeof value === 'object' && value !== null) {
+          if (cache.indexOf(value) !== -1) {
+              // Circular reference found, discard key
+              return;
+          }
+          // Store value in our collection
+          cache.push(value);
+      }
+      return value;
+  }, 2);
+  cache = null;
+
+  console.log(domString);
 }
 
 makeRequest();
