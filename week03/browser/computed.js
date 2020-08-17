@@ -30,7 +30,7 @@ function computeCss(element, stack) {
      * match 之后返回一个这样的数组：[ 'span', 'code>', 'p~', 'div ', 'img+' ]
      * 迭代这个数组，然后根据每个 selector 的后缀，来选择需要用什么样的策略查找
      */
-    let selector = rule.selectors[0].replace(/[ ]?([ >+~])[ ]?/g, '$1'); // 删除多余的空格
+    const selector = rule.selectors[0].replace(/\s*([>+~])\s*/g, '$1'); // 删除多余的空格
     const selectorParts = selector.match(/([.#]?[a-zA-Z0-9-]+[ >+~]?)/g)?.reverse(); // 匹配 复合选择器正则，返回一个反序的数组
     for (let selector of selectorParts) {
       const subfix = selector.match(/[ >+~]$/)?.[0];
@@ -191,7 +191,16 @@ function match(element, selector) {
     const attr = element.attributes.find(attr => attr.name === 'class' && (attr.value === cls || attr.value.split(' ').find((c) => c === cls))); // 如果 class 有多个，则 split 空格再查找
     return attr !== void 0;
   } else {
-    return element.tagName === selector;
+    if (element.tagName !== selector) {
+      return false;
+    }
+    const index = selector[0].indexOf('.');
+    if (index > -1) { // 如果包含class，类似：span.myclass
+      const cls = selector[0].substring(index + 1, selector[0].length); // 提取 class
+      const attr = element.attributes.find(attr => attr.name === 'class' && (attr.value === cls || attr.value.split(' ').find((c) => c === cls))); // 如果 class 有多个，则 split 空格再查找
+      return attr !== void 0; // 如果 class 不匹配，返回 false
+    }
+    return true;
   }
 }
 

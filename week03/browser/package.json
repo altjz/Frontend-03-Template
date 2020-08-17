@@ -7,5 +7,6 @@
   "license": "ISC",
   "dependencies": {
     "css": "^3.0.0"
-  }
+  },
+  "engines" : { "node" : ">=14" }
 }

@@ -4,7 +4,7 @@
 
 这周的学习强度，真的相当大，首先，自身对 CSS 不是特别熟悉，所以有很多知识是恶补的，例如，复合选择器，简单选择器，这些术语，我还没搞懂。翻看了很多基础文章补全。
 
-## 选做题：复合选择器解析
+## 选做题：复合选择器解析 和 Specificity
 
 这个选做题，我一度想放弃，尝试了很多方法，也翻阅了很多资料。
 
@@ -43,3 +43,42 @@ Winter 老师的 文本节点是放在了 children 里面，但是，我看实�
 选做题我也只完成了一个，另外 属性选择器，时间限制实在没办法完成了，只能之后再抽时间补上了
 
 但之前立下的 Flag，一个都没完成。。。一旦落下了进度，就真的很难赶上。
+
+## 作业说明
+
+1. DOM 树构建 (parser.js)
+2. 选做题：复合选择器解析 (computed.js)
+3. 选做题：Specificity 支持 Class 空格分割 (computed.js)
+
+作业里面直接集成了上面三个部分，由于 `CSS compute` 代码比较长，做了拆分，其他使用基本和 Winter 老师的保持一致。
+
+*用了 `Optional Chaining` 符号，node 版本需要 大于 14 才可以。*
+
+### 复合选择器解析
+
+复合选择器解析，使用了正则表达式提取关键规则，参考规则: [Mozilla CSS 部分](https://developer.mozilla.org/en-US/docs/Web/CSS)
+
+```javascript
+    const selector = rule.selectors[0].replace(/\s*([>+~])\s*/g, '$1'); // 删除多余的空格
+    const selectorParts = selector.match(/([.#]?[a-zA-Z0-9-]+[ >+~]?)/g)?.reverse(); // 匹配 复合选择器正则，返回一个反序的数组
+```
+
+目前支持以下4种复合选择器：
+
+1. 后代选择器 Descendant Combinator
+2. 子代选择器 Child Combinator
+3. 相邻兄弟选择器 Adjacent Sibling Combinator
+4. 通用兄弟选择器 Gernal Sibling Combinator
+
+其他支持：
+
+1. 支持混用，例如：`img + div p ~ code > span`，支持混插空格，例如：`img   + div p   ~   code>   span`
+2. 支持 `span.classname` 类似这样的 tagName + classname 的组合（中间不包括空格）
+3. 支持 多个 classname （就是12题的选做题）
+
+不支持：
+
+1. `Column Combinator`  列表选择器
+2. 伪类，伪元素
+3. 属性选择器
+4. 逗号分割
