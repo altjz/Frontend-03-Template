@@ -1,0 +1,20 @@
+{
+  "name": "browser",
+  "version": "1.0.0",
+  "description": "",
+  "main": "client.js",
+  "author": "altjz",
+  "license": "ISC",
+  "scripts": {
+    "server": "node server/server.js",
+    "client": "node browser/client.js"
+  },
+  "dependencies": {
+    "css": "^3.0.0",
+    "images": "^3.2.3"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "devDependencies": {}
+}

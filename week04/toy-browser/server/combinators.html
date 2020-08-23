@@ -1,0 +1,43 @@
+<html>
+    <style>
+        div img+span {
+            color: #FF1111;
+        }
+        p~span {
+            color:blueviolet;
+        }
+        div img+div p~span+code {
+            color: #888888;
+            font-size: 50px;
+        }
+        div .mycode{
+            color: #123456;
+            font-size: 50px;
+        }
+        code.codeclass{
+            color: #F8F;
+            font-size: 20px;
+        }
+    </style>
+    <body>
+        <div>
+            <img />
+            <span> hello world</span>
+        </div>
+        <div>
+            <img />
+            <div>
+                <p>
+                    <p>some paragraph.</p>
+                    <code> some code </code>
+                    <span> hello world</span>
+                    <code class="mycode"> some code again </code>
+                </p>
+            </div>
+            <img />
+            <p>ppp</p>
+            <code class="codeclass">code</code>
+            <span>span</span>
+        </div>
+    </body>
+</html>
