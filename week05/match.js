@@ -140,30 +140,68 @@ function getRules(_selector) {
   return rules;
 }
 
-function match(selector, element) {
-  const rules = getRules(selector);
-  const _element = element; // element 指针
-
-  for (let i = rules.length - 1; i >= 0; i--) { // 反向查找
-    const rule = rules[i];
-    if (!rule.combinator) {
-
+function matchCombinatorSelector(rule, element, combinator) {
+  if (!combinator) {
+    if (matchSimpleSelector(rule, element)) {
+      return true;
     }
-
-    if (matchElement(rule, element)) {
-      continue;
+    return false;
+  } else if (combinator === ' ') { // 后代
+    if (element.parentElement) {
+      if (matchSimpleSelector(rule, element.parentElement)) {
+        elementPointer = element.parentElement;
+        return true;
+      }
+      return query(rule, element.parentElement, combinator);
     }
+    return false;
+  } else if (combinator === '>') { // 子代
+    if (element.parentElement) {
+      if (matchSimpleSelector(rule, element.parentElement)) {
+        elementPointer = element.parentElement;
+        return true;
+      }
+    }
+    return false;
+  } else if (combinator === '~') { // 通用兄弟
+    if (element.parentElement) {
+      const children = element.parentElement.children;
+      const index = children.indexOf(element); // 先找到自己的位置
+      if (index > -1 && index < children[children.length] -1) { // 如果最后一个则跳过
+        for (let i = index + 1; i < children.length; i++) { // 直接从当前位置之后开始
+          if (matchSimpleSelector(rule, children[i])) {
+            elementPointer = children[i];
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  } else if (combinator === '+') { // 相邻兄弟
+    if (element.parentElement) {
+      const children = element.parentElement.children;
+      const index = children.indexOf(element); // 先找到自己的位置
+      if (index > -1 && index < children[children.length] -1) { // 如果最后一个则跳过
+        if (matchSimpleSelector(rule, children[index + 1])) {
+          elementPointer = children[i];
+          return true;
+        }
+      }
+    }
+  } else if (combinator === '|') { // 列合并 TODO: 待实现
+  } else if (combinator === ',') { // 逗号 或 TODO: 待实现
   }
-  return true;
+  return false;
 }
 
-function matchElement(rule, element) {
+function matchSimpleSelector(rule, element) {
   if (rule.type === RuleType.P_Class || rule.type === RuleType.P_Element) { // 伪元素 和 伪类 跳过
     return true;
-  } else if (rule.type === RuleType.Attr) { // TODO: 通配符 https://developer.mozilla.org/zh-CN/docs/Web/CSS/Attribute_selectors
+  } else if (rule.type === RuleType.Attr) { // TODO: 通配符 适配 https://developer.mozilla.org/zh-CN/docs/Web/CSS/Attribute_selectors
     const name = rule.rule.split('=')[0];
-    const value = rule.rule.split('=')[1];
-    if (Array.from(element.attributes).find((a) => a.name === name && a.value === value)) {
+    const value = rule.rule.split('=')[1].replace(/['"]/g, ''); //TODO: 单双引号混用
+    const attributes = Array.from(element.attributes);
+    if (attributes.find((a) => a.name === name && a.value === value)) {
       return true;
     }
   } else if (rule.type === RuleType.Class) {
@@ -175,13 +213,31 @@ function matchElement(rule, element) {
       return true;
     }
   } else if (rule.type === RuleType.Tag) {
-    if (element.type === rule.rule) {
+    if (element.tagName.toLowerCase() === rule.rule.toLowerCase()) {
       return true;
     }
   } else if (rule.type === RuleType.Star) {
     return true;
   }
 }
+
+let elementPointer = null; // element 引用 指针
+
+function match(selector, element) {
+  const rules = getRules(selector);
+  elementPointer = element; // element 指针
+
+  for (let i = rules.length - 1; i >= 0; i--) { // 反向查找
+    const rule = rules[i];
+    if (matchCombinatorSelector(rule, elementPointer, rule.combinator)) {
+      continue;
+    }
+    return false;
+  }
+  return true;
+}
+
+export default match;
 
 // console.log(getRules('div > .hello-world #id.class[value="1234"]::first-letter'));
 

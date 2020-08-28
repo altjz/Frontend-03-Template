@@ -1,0 +1,40 @@
+<html>
+  <header>
+      <title>Test</title>
+  </header>
+  <style>
+    body {
+      text-align: center;
+    }
+    div > .hello-world #id.class[value="1234"]::first-letter {
+        font-size: 50px;
+        color: red;
+    }
+    .match {
+      margin-top: 100px;
+      color: greenyellow;
+    }
+  </style>
+  <body>
+    <div>
+      <div class="hello-world">
+        <div id="id" class="class" value="1234">
+          Hello World!
+        </div>
+      </div class="hello-world">
+    </div>
+    <div>
+      <h1 id="match" class="match"></h1>
+    </div>
+  </body>
+  <script type="module">
+    import match from './match.js';
+    const element = document.getElementById('id');
+    const selector = `div > .hello-world #id.class[value="1234"]::first-letter`;
+    const isMatch = match(selector, element);
+    if (isMatch) {
+      const matchEl = document.getElementById('match');
+      matchEl.innerText = 'Match!!!';
+    }
+  </script>
+</html>
