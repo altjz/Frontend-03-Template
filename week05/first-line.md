@@ -14,7 +14,7 @@
 
 ## 假设
 
-看到这一题的时候我完全懵逼，完全不知道怎么下手，感觉光靠猜也无补于事。先大胆假设吧。
+看到这一题的时候我完全懵逼，完全不知道怎么下手，先大胆假设吧。
 
 1. 性能问题
 
@@ -140,7 +140,7 @@ is
 
 但是 `first-letter` 不会打断元素，因为它只有一个，并不存在打断，因此它不用担心 `float` 会打乱排版.
 
-csswg 的 first-line 标准:
+csswg 的 first-line 标准里面的原文:
 
 If a pseudo-element breaks up a real element, the desired effect can often be described by a fictional tag sequence that closes and then re-opens the element. Thus, if we mark up the previous paragraph with a span element:
 

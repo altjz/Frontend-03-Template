@@ -94,6 +94,6 @@ selector 支持
 
 ### CSS 优先级
 
-查找 CSS 优先级的时候，找到一张很有意思的图片，（在 Mozilla 这么正经的网站上看到的），只能说外国人真会玩，`!important` 我真笑了 🤣
+查找 CSS 优先级的时候，找到一张很有意思的图片，（在 [Mozilla](https://developer.mozilla.org/zh-CN/docs/Web/CSS/Specificity) 这么正经的网站上看到的），只能说外国人真会玩，`!important` 我真笑了 🤣
 
 ![specifishity.png](https://specifishity.com/specifishity.png)

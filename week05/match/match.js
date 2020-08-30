@@ -1,6 +1,9 @@
 /**
  * 判断 element 是否匹配 selector
- * getRules 函数使用，状态机返回一个 rule 二维数组
+ * getRules 函数使用，状态机返回一个 rules 二维数组，（主要是为了适配 逗号，分隔符）
+ * 
+ * 支持以下复杂的选择器混用（支持空格混用）
+ * `body div > .hello-world #oooo.class + [value="1234"] .hello ~ .gotme , body div p.list-test `
  * 
  * selector 支持
  * 复合选择器: #id.class
