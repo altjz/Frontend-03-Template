@@ -1,0 +1,20 @@
+<body>
+  <ul id="api"></ul>
+</body>
+<script src="api.js"></script>
+<script>
+  const ul = document.getElementById('api');
+
+  const length = document.createElement('h1');
+  length.textContent = names.length + ' Left';
+  document.body.insertBefore(length, ul);
+
+  const fragment = document.createDocumentFragment();
+  names.forEach((name) => {
+    const li = document.createElement('li');
+    li.textContent = name;
+    fragment.appendChild(li)
+  });
+
+  ul.appendChild(fragment);
+</script>
