@@ -1,0 +1,99 @@
+<htm>
+  <header></header>
+  <style>
+    .item {
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      background-color: cornflowerblue;
+      margin: 2px;
+      text-align: center;
+      font-size: 25px;
+      vertical-align: middle;
+      line-height: 30px;
+    }
+  </style>
+
+  <body>
+    <div id="board"></div>
+  </body>
+  <script>
+    const N = 5; // 5字棋
+    const CLOUMN = 15; // 棋盘格子数
+    let pattern = [];
+    for (let i = 0; i < CLOUMN * CLOUMN; i++) { // 初始化棋盘
+      pattern.push(0);
+    }
+
+    let current = 1;
+
+    function show() {
+      const board = document.getElementById('board');
+      board.innerHTML = "";
+      for (let i = 0; i < CLOUMN * CLOUMN; i++) {
+        const item = document.createElement('div');
+        item.className = 'item';
+        item.textContent = getColor(pattern[i]);
+        item.addEventListener('click', () => move(i), { once: true});
+        board.appendChild(item);
+        if ((i + 1) % CLOUMN === 0) {
+          board.appendChild(document.createElement('br'));
+        }
+      }
+    }
+
+    function getColor(color) {
+      return color === 2 ? '❌' : color === 1 ? '⭕️' : '';
+    }
+
+    function getXY(i) {
+      return {
+        y: parseInt(i / CLOUMN),
+        x: i % CLOUMN,
+      }
+    }
+
+    function move(i) {
+      pattern[i] = current;
+      // console.log(i, getXY(i), current);
+      show();
+      if (check(i)) {
+        alert(`${getColor(current)} win !!`)
+      }
+      current = 3 - current;
+    }
+
+    /**
+     * 判断落子点，横竖斜，是否有连子 N 个
+     */ 
+    function check(i) {
+      const { x, y } = getXY(i);
+      // 横，落子点前
+      if (x >= N) {
+        let win = true;
+        for (let j = i - N + 1; j < i + 1; j++) {
+          if (pattern[j] !== current) {
+            win = false;
+          }
+        }
+        if (win) {
+          return true;
+        }
+      }
+      // 横，落子点后
+      if (CLOUMN - x >= N) {
+        let win = true;
+        for (let j = i; j < i + N; j++) {
+          if (pattern[j] !== current) {
+            win = false;
+          }
+        }
+        if (win) {
+          return true;
+        }
+      }
+    }
+
+    show();
+  </script>
+</htm>
