@@ -115,7 +115,7 @@
       // 正斜
       {
         let matchCount = 0;
-        const length = Math.abs(CLOUMN - (x + 1 - (y + 1)));
+        const length = CLOUMN - Math.abs(x - y);
         const xStart = 0;
         const yStart = CLOUMN - length;
         if (length >= N) {
@@ -135,9 +135,9 @@
       // 反斜
       {
         let matchCount = 0;
-        const length = Math.abs(CLOUMN - (x + 1 - (y + 1)));
-        const yStart = 0;
-        const xStart = CLOUMN - length;
+        const length = CLOUMN - Math.abs(CLOUMN - x - 1 - y);
+        const xStart = 0;
+        const yStart = CLOUMN - length;
         if (length >= N) {
           for (let j = 0, _x = xStart, _y = yStart; j < length; _x++, _y++, j++) {
             const I = getI(_x, _y)
