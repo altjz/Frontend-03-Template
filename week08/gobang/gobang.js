@@ -1,5 +1,5 @@
-const N = 5; // 5 字棋
-const COLUMN = 15; // 棋盘格子数
+const N = 3; // 5 字棋
+const COLUMN = 3; // 棋盘格子数
 let pattern = [];
 for (let i = 0; i < COLUMN; i++) { // 初始化棋盘
   const row = [];
@@ -20,7 +20,7 @@ function create(pattern) {
     for (let j = 0; j < COLUMN; j++) {
       const item = document.createElement('div');
       item.className = 'item';
-      item.addEventListener('click', () => move(pattern, j, i), {
+      item.addEventListener('click', () => userMove(pattern, j, i), {
         once: true
       });
       ITEMS[i].push(item);
@@ -44,24 +44,40 @@ function getColor(color) {
   return color === 2 ? '❌' : color === 1 ? '⭕️' : '';
 }
 
-function move(pattern, x, y) {
+function userMove(pattern, x, y) {
   // if (current === 1) console.log(`${x},${y}`);
   pattern[y][x] = current;
-  show();
-  if (check(pattern, x, y)) {
+  if (check(pattern, x, y, current)) {
     alert(`${getColor(current)} win !!`);
     return;
   }
   current = 3 - current;
-  if (willWin(pattern, current)) {
-    console.log(`${getColor(current)} will Win!!`);
+  show();
+  computerMove(pattern);
+
+  // console.log(bestChoice(pattern, current));
+  // // if (willWin(pattern, current)) {
+  // //   console.log(`${getColor(current)} will Win!!`);
+  // // }
+}
+
+function computerMove(pattern) {
+  let choice = bestChoice(pattern, current);
+  if (choice.point) {
+    console.log(choice.point, choice.result);
+    pattern[choice.point[1]][choice.point[0]] = current;
   }
+  if (check(pattern, choice.point[0], choice.point[1], current)) {
+    alert(`${getColor(current)} win !!`);
+  }
+  current = 3 - current;
+  show();
 }
 
 /**
  * 判断落子点，横竖斜，是否有连子 N 个
  */
-function check(pattern, x, y) {
+function check(pattern, x, y, current) {
   // 横 -
   {
     let matchCount = 0;
@@ -155,11 +171,8 @@ function willWin(pattern, color) {
       }
       const tmp = clone(pattern);
       tmp[i][j] = color;
-      if (check(tmp, j, i)) {
-        return {
-          x: j,
-          y: i,
-        };
+      if (check(tmp, j, i, color)) {
+        return [j, i];
       }
     }
   }
@@ -167,7 +180,6 @@ function willWin(pattern, color) {
 }
 
 function bestChoice(pattern, color) {
-  let p;
   if (p = willWin(pattern, color)) {
     return {
       point: p,
@@ -176,20 +188,25 @@ function bestChoice(pattern, color) {
   }
   let result = -2;
   let point = null;
-  for (let i = 0; i < COLUMN * COLUMN; i++) {
-    if (pattern[i])
-      continue;
-    const tmp = clone(pattern);
-    tmp[i] = color;
-    let r = bestChoice(tmp, 3 - color).result;
-
-    if (-r > result) {
-      result = -r;
-      point = i;
+  outer:for (let i = 0; i < COLUMN; i++) {
+    for (let j = 0; j < COLUMN; j++) {
+      if (pattern[i][j])
+        continue;
+      const tmp = clone(pattern);
+      tmp[i][j] = color;
+      let r = bestChoice(tmp, 3 - color).result;
+  
+      if (- r > result) {
+        result = - r;
+        point = [j, i];
+      }
+      if (result === 1) {
+        break outer;
+      }
     }
   }
   return {
-    point: point,
+    point,
     result: point ? result : 0,
   }
 }
