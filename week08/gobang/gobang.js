@@ -45,7 +45,7 @@ function getColor(color) {
 }
 
 function move(pattern, x, y) {
-  if (current === 1) console.log(`${x},${y}`);
+  // if (current === 1) console.log(`${x},${y}`);
   pattern[y][x] = current;
   show();
   if (check(pattern, x, y)) {
@@ -53,13 +53,9 @@ function move(pattern, x, y) {
     return;
   }
   current = 3 - current;
-  // if (willWin(pattern, current)) {
-  //   console.log(`${getColor(current)} will Win!!`);
-  // }
-}
-
-function clone(pattern) {
-  return Object.create(pattern);
+  if (willWin(pattern, current)) {
+    console.log(`${getColor(current)} will Win!!`);
+  }
 }
 
 /**
@@ -99,8 +95,8 @@ function check(pattern, x, y) {
     let matchCount = 0;
     const COUNT = COLUMN - Math.abs(COLUMN - x - 1 - y); // 获取当前正斜的元素数量
     let _x, _y;
-    if (COLUMN - x + 1 > y ) { // 只要 COLUMN - x + 1 > y 就是在对角线的内
-      _y = COUNT - 1;
+    if (COLUMN - x - 1 > y ) { // 只要 COLUMN - x + 1 > y 就是在对角线的内
+      _y = COUNT;
       _x = 0;
     } else {
       _y = COLUMN - 1;
@@ -147,15 +143,24 @@ function check(pattern, x, y) {
   }
 }
 
+function clone(pattern) {
+  return JSON.parse(JSON.stringify(pattern));
+}
+
 function willWin(pattern, color) {
-  for (let i = 0; i < COLUMN * COLUMN; i++) {
-    if (pattern[i]) {
-      continue;
-    }
-    const tmp = clone(pattern);
-    tmp[i] = color;
-    if (check(tmp, i)) {
-      return i;
+  for (let i = 0; i < COLUMN; i++) {
+    for (let j = 0; j < COLUMN; j++) {
+      if (pattern[i][j]) {
+        continue;
+      }
+      const tmp = clone(pattern);
+      tmp[i][j] = color;
+      if (check(tmp, j, i)) {
+        return {
+          x: j,
+          y: i,
+        };
+      }
     }
   }
   return false;
