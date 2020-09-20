@@ -18,7 +18,7 @@
 
 3. Gobang 五子棋 （未完成）
 
-打开：[Tic Tac Toe](./gobang/index.html)
+打开：[GoBang](./gobang/index.html)
 
 使用 最小最大博弈算法 评估分数，选取最大的数值
 
