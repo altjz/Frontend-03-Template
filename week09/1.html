@@ -1,0 +1,69 @@
+<htm>
+  <style>
+    .cell {
+      display: inline-block;
+      height: 6px;
+      width: 6px;
+      background-color: gray;
+      border-right: solid 1px white;
+      border-bottom: solid 1px white;
+    }
+    #container {
+      width: 800px;
+    }
+  </style>
+  <body>
+    <div id="container"></div>
+    <div>
+      <button onclick="localStorage.setItem('map', JSON.stringify(map))">Save</button>
+      <button onclick="reset(true)">Reset</button>
+    </div>
+  </body>
+  <script>
+    const container = document.getElementById('container');
+    let map;
+
+    let mousedown = false;
+    let clear = false;
+    document.addEventListener('mousedown', (e) => {
+      mousedown = true;
+      clear = (e.which === 3);
+    });
+    document.addEventListener('mouseup', (e) => { mousedown = false});
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    function reset(force = false) {
+      console.log('reset');
+      if (force) {
+        map = Array(10000).fill(0);
+      } else {
+        map = localStorage['map'] ? JSON.parse(localStorage['map']) : Array(10000).fill(0);
+      }
+      container.innerHTML = "";
+      for (let y = 0; y < 100; y++) {
+        for (let x = 0; x < 100; x++) {
+          const cell = document.createElement('div');
+          cell.classList.add('cell');
+
+          if (map[100*y + x] === 1) {
+            cell.style.backgroundColor = 'black';
+          }
+
+          cell.addEventListener('mousemove', (e) => {
+            if (mousedown) {
+              if (clear) {
+                cell.style.backgroundColor = '';
+                map[100 * y + x] = 0;
+              } else {
+                cell.style.backgroundColor = 'black';
+                map[100 * y + x] = 1;
+              }
+            }
+          });
+          container.appendChild(cell);
+        }
+      }
+    }
+    reset();
+  </script>
+</htm>

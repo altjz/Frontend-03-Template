@@ -1,0 +1,112 @@
+<htm>
+  <style>
+    .cell {
+      display: inline-block;
+      height: 6px;
+      width: 6px;
+      background-color: gray;
+      border-right: solid 1px white;
+      border-bottom: solid 1px white;
+    }
+    #container {
+      width: 800px;
+    }
+  </style>
+  <body>
+    <div id="container"></div>
+    <div>
+      <button onclick="localStorage.setItem('map', JSON.stringify(map))">Save</button>
+      <button onclick="reset(true)">Reset</button>
+    </div>
+  </body>
+  <script>
+    const N = 100;
+    const container = document.getElementById('container');
+    let map;
+
+    let mousedown = false;
+    let clear = false;
+    document.addEventListener('mousedown', (e) => {
+      mousedown = true;
+      clear = (e.which === 3);
+    });
+    document.addEventListener('mouseup', (e) => { mousedown = false});
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    function sleep(time) {
+      return new Promise((resolve) => {
+        setTimeout(() => resolve(), time);
+      });
+    }
+
+    function reset(force = false) {
+      console.log('reset');
+      if (force) {
+        map = Array(N*N).fill(0);
+      } else {
+        map = localStorage['map'] ? JSON.parse(localStorage['map']) : Array(N*N).fill(0);
+      }
+      container.innerHTML = "";
+      for (let y = 0; y < N; y++) {
+        const row = document.createElement('div');
+        for (let x = 0; x < N; x++) {
+          const cell = document.createElement('div');
+          cell.setAttribute('title', `[${x}, ${y}]`);
+          cell.classList.add('cell');
+
+          if (map[N * y + x] === 1) {
+            cell.style.backgroundColor = 'black';
+          }
+
+          cell.addEventListener('mousemove', (e) => {
+            if (mousedown) {
+              if (clear) {
+                cell.style.backgroundColor = '';
+                map[N * y + x] = 0;
+              } else {
+                cell.style.backgroundColor = 'black';
+                map[N * y + x] = 1;
+              }
+            }
+          });
+          row.appendChild(cell);
+        }
+        container.appendChild(row);
+      }
+    }
+    
+    function findPath(map, start, end) {
+      container.children[end[1]].children[end[0]].style.backgroundColor = 'red';
+      const queue = [start];
+
+      function insert(x, y) {
+        if (x >= N || x < 0 || y >= N || y < 0) {
+          return;
+        }
+        if (map[N * y + x]) {
+          return;
+        }
+        map[N * y + x] = 2;
+        queue.push([x, y]);
+        if (x === end[0] && y === end[1]) {
+        } else {
+          container.children[y].children[x].style.backgroundColor = 'green';
+        }
+      }
+
+      while(queue.length) {
+        const [x, y] = queue.shift();
+
+        if (x === end[0] && y === end[1]) {
+          return true;
+        }
+        insert(x - 1, y);
+        insert(x + 1, y);
+        insert(x, y - 1);
+        insert(x, y + 1);
+      }
+    }
+
+    reset();
+  </script>
+</htm>
