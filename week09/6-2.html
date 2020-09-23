@@ -20,6 +20,37 @@
     </div>
   </body>
   <script>
+    class Sorted {
+      constructor(data, compare) {
+        this.data = data.slice();
+        this.compare = compare || ((a, b) => a - b);
+        this.length = this.data.length;
+      }
+      take() {
+        if (!this.data.length) {
+          return;
+        }
+        let min = this.data[0];
+        let minIndex = 0;
+
+        for (let i = 0; i < this.data.length; i++) {
+          if (this.compare(this.data[i], min) < 0) {
+            min = this.data[i];
+            minIndex = i;
+          }
+        }
+
+        this.data[minIndex] = this.data[this.data.length - 1];
+        this.data.pop();
+        return min;
+      }
+
+      give(v) {
+        this.data.push(v);
+      }
+    }
+  </script>
+  <script>
     const N = 100;
     const container = document.getElementById('container');
     let map;
@@ -37,6 +68,10 @@
       return new Promise((resolve) => {
         setTimeout(() => resolve(), time);
       });
+    }
+
+    function distance(a) {
+      return a[0] ** 2 + a[1] ** 2;
     }
 
     function reset(force = false) {
@@ -77,9 +112,10 @@
     
     async function findPath(map, start, end) {
       container.children[end[1]].children[end[0]].style.backgroundColor = 'red';
-      const queue = [start];
+      const table = Object.create(map);
+      const queue = new Sorted([start], (a, b) => distance(a) - distance(b));
 
-      async function insert(x, y) {
+      async function insert(x, y, prePoint) {
         if (x >= N || x < 0 || y >= N || y < 0) {
           return;
         }
@@ -87,24 +123,33 @@
           return;
         }
         map[N * y + x] = 2;
-        queue.push([x, y]);
+        queue.give([x, y]);
         if (x === end[0] && y === end[1]) {
         } else {
           container.children[y].children[x].style.backgroundColor = 'green';
         }
+        table[y * N + x] = prePoint;
         await sleep(10);
       }
 
       while(queue.length) {
-        const [x, y] = queue.shift();
+        let [x, y] = queue.take();
 
         if (x === end[0] && y === end[1]) {
-          return true;
+          const path = [];
+
+          while (x !== start[0] || y !== start[1]) {
+            path.push(map[y * N + x]);
+            [x, y] = table[y * N + x];
+            container.children[y].children[x].style.backgroundColor = 'purple';
+            await sleep(20);
+          }
+          return path;
         }
-        await insert(x - 1, y);
-        await insert(x + 1, y);
-        await insert(x, y - 1);
-        await insert(x, y + 1);
+        await insert(x - 1, y, [x, y]);
+        await insert(x + 1, y, [x, y]);
+        await insert(x, y - 1, [x, y]);
+        await insert(x, y + 1, [x, y]);
       }
     }
 
