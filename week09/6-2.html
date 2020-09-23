@@ -49,6 +49,82 @@
         this.data.push(v);
       }
     }
+
+    class Heap {
+      constructor(data, isMax) {
+        this.data = this.buildHeap(data, isMax);
+      }
+
+      buildHeap(arr, isMax) {
+        const d = arr.slice();
+        const pLen = parseInt(d.length / 2, 10);
+        if (isMax) { // 最大堆
+          for (let s = 0; s < pLen - 1; s++) {
+            heapUp(d, s);
+          }
+        } else { // 最小堆
+          for (let s = pLen - 1; s >= 0; s--) {
+            heapDown(d, s);
+          }
+        }
+        return d;
+      }
+
+      heapDown(d, s) {
+        if (d[s] > d[2 * s + 1] || d[s] > d[2 * s]) {
+          let _s;
+          if (d[2 * s + 1] > d[2 * s + 2]) { // 右边子节点
+            _s = 2 * s + 2;
+            swap(d, s, _s);
+
+          } else { // 左边子节点
+            _s = 2 * s + 1;
+            swap(d, s, _s)
+          }
+          if ((2 * _s + 1) < d.length) {
+            heapDown(d, _s);
+          }
+        }
+      }
+
+      heapUp(d, s) {
+        if (d[s] < d[2 * s + 1] || d[s] < d[2 * s]) {
+          if (d[2 * s + 1] < d[2 * s + 2]) { // 右边子节点
+            swap(d, s, 2 * s + 2);
+          } else { // 左边子节点
+            swap(d, s, 2 * s + 1)
+          }
+          const _s = findChildIdx(s);
+          if ((_s) >= 0) {
+            heapUp(d, _s);
+          }
+        }
+      }
+
+      swap(arr, a, b) {
+        let tmp = arr[a];
+        arr[a] = arr[b];
+        arr[b] = tmp;
+      }
+
+      findChildIdx(s) {
+        return s % 2 === 0 ? parseInt(s / 2 - 1) : parseInt((s - 1) / 2)
+      }
+
+      get length() {
+        return this.data.length;
+      }
+
+      take() {
+        if (!this.data.length) {
+          return;
+        }
+      }
+
+      give(v) {
+        this.data.push(v);
+      }
+    }
   </script>
   <script>
     const N = 100;
