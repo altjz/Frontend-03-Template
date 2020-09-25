@@ -17,8 +17,10 @@
   <body>
     <div id="container"></div>
     <div>
-      <button onclick="localStorage.setItem('map', JSON.stringify(map))">Save</button>
+      <button onclick="save()">Save</button>
       <button onclick="reset(true)">Reset</button>
+      <button onclick="findPath(map, [0,0], targetPoint)">Find Path</button>
+      <span id="targetPoint"></span>
     </div>
   </body>
   <script src="heap.js"></script>
@@ -26,6 +28,7 @@
   <script>
     const N = 100;
     const container = document.getElementById('container');
+    let targetPoint;
     let map;
 
     let mousedown = false;
@@ -45,8 +48,11 @@
       });
     }
 
-    function distance(a) {
-      return a !== undefined ? (a[0] ** 2 + a[1] ** 2) : undefined ;
+    function save() {
+      localStorage.setItem('map', JSON.stringify(map));
+      if (targetPoint) {
+        localStorage.setItem('targetPoint', JSON.stringify(targetPoint));
+      }
     }
 
     function reset(force = false) {
@@ -79,6 +85,9 @@
               }
             }
           });
+          cell.addEventListener('dblclick', (e) => {
+            settargetPoint([x, y]);
+          })
           row.appendChild(cell);
         }
         container.appendChild(row);
@@ -86,38 +95,40 @@
     }
 
     async function findPath(map, start, end) {
-      container.children[end[1]].children[end[0]].style.backgroundColor = 'red';
+      // container.children[end[1]].children[end[0]].style.backgroundColor = 'red';
       const table = Object.create(map);
       const queue = new MinHeap([start], (a, b) => distance(a) > distance(b));
-      // const queue = new Sorted([start], (a, b) => distance(a) > distance(b));
+
+    function distance(a) {
+      return a !== undefined ? ((a[0] - end[0]) ** 2 + (a[1] - end[1]) ** 2) : undefined ;
+    }
 
       async function insert(x, y, prePoint) {
         if (x >= N || x < 0 || y >= N || y < 0) {
           return;
         }
-        if (map[N * y + x]) {
+        if (table[N * y + x]) {
+          // table[y * N + x] = prePoint;
           return;
         }
-        map[N * y + x] = 2;
-        queue.give([x, y]);
-        if (x === end[0] && y === end[1]) {} else {
-          container.children[y].children[x].style.backgroundColor = 'green';
-        }
         table[y * N + x] = prePoint;
-        await sleep(10);
+        container.children[y].children[x].style.backgroundColor = 'green';
+        queue.give([x, y]);
+        await sleep(5);
       }
 
       while (queue.length) {
         let [x, y] = queue.take();
 
         if (x === end[0] && y === end[1]) {
+          container.children[end[1]].children[end[0]].style.backgroundColor = 'red';
           const path = [];
 
           while (x !== start[0] || y !== start[1]) {
             path.push(map[y * N + x]);
             [x, y] = table[y * N + x];
             container.children[y].children[x].style.backgroundColor = 'purple';
-            // await sleep(20);
+            await sleep(20);
           }
           return path;
         }
@@ -125,12 +136,28 @@
         await insert(x + 1, y, [x, y]);
         await insert(x, y - 1, [x, y]);
         await insert(x, y + 1, [x, y]);
+
+        // await insert(x - 1, y - 1, [x, y]);
+        // await insert(x + 1, y + 1, [x, y]);
+        // await insert(x + 1, y - 1, [x, y]);
+        // await insert(x - 1, y + 1, [x, y]);
       }
     }
 
+    function settargetPoint(p) {
+      if (targetPoint) {
+        container.children[targetPoint[1]].children[targetPoint[0]].style.backgroundColor = 'grey';
+      }
+      targetPoint = p;
+      const targetPointSpan = document.getElementById('targetPoint');
+      targetPointSpan.innerText = `[${targetPoint.join(',')}]`;
+      container.children[targetPoint[1]].children[targetPoint[0]].style.backgroundColor = 'red';
+    }
+
     reset();
-    // const start = new Date();
-    // findPath(map, [0, 0], [79, 50]);
-    // console.log(new Date() - start);
+    if (localStorage['targetPoint']) {
+      settargetPoint(JSON.parse(localStorage['targetPoint']));
+    }
+
   </script>
 </html>

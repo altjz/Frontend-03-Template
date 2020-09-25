@@ -17,7 +17,7 @@ class Sorted {
     let minIndex = 0;
 
     for (let i = 0; i < this.data.length; i++) {
-      if (!this.compare(this.data[i], min)) {
+      if (this.compare(min, this.data[i])) {
         min = this.data[i];
         minIndex = i;
       }
