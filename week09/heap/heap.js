@@ -32,7 +32,10 @@ class MinHeap {
 
   shiftUp(s) {
     const d = this.data;
-    while (s > 0 && this.compare(d[parent(s)], d[s])) {
+    while (s > 0 && d[parent(s)] && d[s]) {
+      if (!this.compare(d[parent(s)], d[s])) {
+        break;
+      }
       this.swap(s, parent(s));
       s = parent(s);
     }
@@ -40,7 +43,7 @@ class MinHeap {
   
   shiftDown(s) {
     const d = this.data;
-    while (left(s) <= d.length) {
+    while (left(s) <= d.length && d[left(s)] && d[right(s)]) {
       const minChildIdx = this.compare(d[left(s)], d[right(s)]) ? right(s) : left(s);
       if (this.compare(d[s], d[minChildIdx])) {
         this.swap(s, minChildIdx);
@@ -65,8 +68,17 @@ class MinHeap {
 // (function () {
 //   const arr = [7, 1, 3, 10, 5, 2, 8, 9, 6, 4];
 
+//   function compare(a, b) {
+//     if (a !== undefined && b !== undefined) {
+//       return a > b;
+//     }
+//     console.log(a, b);
+//   }
+
 //   const heap = new MinHeap(arr);
 //   heap.give(0);
-//   console.log(heap.take());
+//   while(heap.length) {
+//     console.log(heap.take());
+//   }
 // })();
 

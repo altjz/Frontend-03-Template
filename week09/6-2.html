@@ -24,6 +24,7 @@
     </div>
   </body>
   <script src="heap.js"></script>
+  <script src="sorted.js"></script>
   <script>
     const N = 100;
     const container = document.getElementById('container');
@@ -55,6 +56,7 @@
     }
 
     function reset(force = false) {
+      console.log('reset');
       if (force) {
         map = Array(N * N).fill(0);
       } else {
@@ -92,39 +94,24 @@
       }
     }
 
-    function distance(goal, p) {
-      if (p) {
-        return Math.sqrt((p[0] - goal[0]) ** 2 + (p[1] - goal[1]) ** 2);
-      }
-    }
-
-    function heuristic(goal, p) {
-      if (p) {
-        return Math.abs(goal[0] - p[0]) + Math.abs(goal[1] - p[1]);
-      }
-    }
-
     async function findPath(map, start, end) {
-      const openArr = [start];
-      const closeArr = Object.create(map);
-      const queue = new MinHeap([start], (a, b) => totalCost(a) > totalCost(b));
+      // container.children[end[1]].children[end[0]].style.backgroundColor = 'red';
+      const table = Object.create(map);
+      const queue = new MinHeap([start], (a, b) => distance(a) > distance(b));
 
-      function totalCost(p) {
-        if (p) {
-          return distance(start, p) + distance(end, p);
-        }
-        console.log(p);
-      }
+    function distance(a) {
+      return a !== undefined ? ((a[0] - end[0]) ** 2 + (a[1] - end[1]) ** 2) : undefined ;
+    }
 
       async function insert(x, y, prePoint) {
         if (x >= N || x < 0 || y >= N || y < 0) {
           return;
         }
-        if (closeArr[N * y + x]) {
+        if (table[N * y + x]) {
+          // table[y * N + x] = prePoint;
           return;
         }
-        openArr[y * N + x] = prePoint;
-        closeArr[y * N + x] = [x, y];
+        table[y * N + x] = prePoint;
         container.children[y].children[x].style.backgroundColor = 'green';
         queue.give([x, y]);
         await sleep(5);
@@ -139,7 +126,7 @@
 
           while (x !== start[0] || y !== start[1]) {
             path.push(map[y * N + x]);
-            [x, y] = openArr[y * N + x];
+            [x, y] = table[y * N + x];
             container.children[y].children[x].style.backgroundColor = 'purple';
             await sleep(20);
           }
