@@ -1,3 +1,6 @@
+/**
+ * 最小堆
+ */
 function parent(s) {
   return s % 2 === 0 ? parseInt(s / 2 - 1) : parseInt((s - 1) / 2);
 }
@@ -40,7 +43,7 @@ class MinHeap {
       s = parent(s);
     }
   }
-  
+
   shiftDown(s) {
     const d = this.data;
     while (left(s) <= d.length && d[left(s)] && d[right(s)]) {
@@ -52,33 +55,32 @@ class MinHeap {
     }
   }
 
-  take(index=0) {
+  take(index = 0) {
     this.swap(index, this.data.length - 1);
     const tmp = this.data.pop();
     this.shiftDown(index);
     return tmp;
   }
-  
+
   give(value) {
     this.data.push(value);
     this.shiftUp(this.data.length - 1);
   }
 }
 
-// (function () {
-//   const arr = [7, 1, 3, 10, 5, 2, 8, 9, 6, 4];
+  // (function () {
+  //   const arr = [7, 1, 3, 10, 5, 2, 8, 9, 6, 4];
 
-//   function compare(a, b) {
-//     if (a !== undefined && b !== undefined) {
-//       return a > b;
-//     }
-//     console.log(a, b);
-//   }
+  //   function compare(a, b) {
+  //     if (a !== undefined && b !== undefined) {
+  //       return a > b;
+  //     }
+  //     console.log(a, b);
+  //   }
 
-//   const heap = new MinHeap(arr);
-//   heap.give(0);
-//   while(heap.length) {
-//     console.log(heap.take());
-//   }
-// })();
-
+  //   const heap = new MinHeap(arr);
+  //   heap.give(0);
+  //   while(heap.length) {
+  //     console.log(heap.take());
+  //   }
+  // })();

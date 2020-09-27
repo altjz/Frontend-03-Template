@@ -1,167 +1,163 @@
-<htm>
-  <style>
-    .cell {
-      display: inline-block;
-      height: 6px;
-      width: 6px;
-      background-color: gray;
-      border-right: solid 1px white;
-      border-bottom: solid 1px white;
-    }
-    #container {
-      width: 800px;
-    }
-  </style>
-  <body>
-    <div id="container"></div>
-    <div>
-      <button onclick="localStorage.setItem('map', JSON.stringify(map))">Save</button>
-      <button onclick="reset(true)">Reset</button>
-    </div>
-  </body>
-  <script>
-    class Sorted {
-      constructor(data, compare) {
-        this.data = data.slice();
-        this.compare = compare || ((a, b) => a - b);
-      }
+<html>
+<style>
+  .cell {
+    display: inline-block;
+    line-height: 7px;
+    width: 6px;
+    height: 6px;
+    background-color: gray;
+    border-bottom: 1px solid white;
+    border-right: 1px solid white;
+    vertical-align: top;
+  }
 
-      get length() {
-        return this.data.length;
-      }
+  #container {
+    width: 701px;
+  }
+</style>
 
-      take() {
-        if (!this.data.length) {
-          return;
-        }
-        let min = this.data[0];
-        let minIndex = 0;
+<body>
+  <div id="container"></div>
+  <div>
+    <button onclick="save()">Save</button>
+    <button onclick="reset(true)">Reset</button>
+    <button onclick="findPath(map, [0,0], targetPoint)">Find Path</button>
+    <span id="targetPoint"></span>
+  </div>
+</body>
+<script src="./lib/heap.js"></script>
+<script>
+  const N = 100;
+  const container = document.getElementById('container');
+  let targetPoint;
+  let map;
 
-        for (let i = 0; i < this.data.length; i++) {
-          if (this.compare(this.data[i], min) < 0) {
-            min = this.data[i];
-            minIndex = i;
-          }
-        }
+  let mousedown = false;
+  let clear = false;
+  document.addEventListener('mousedown', (e) => {
+    mousedown = true;
+    clear = (e.which === 3);
+  });
+  document.addEventListener('mouseup', (e) => {
+    mousedown = false
+  });
+  document.addEventListener('contextmenu', (e) => e.preventDefault());
 
-        this.data[minIndex] = this.data[this.data.length - 1];
-        this.data.pop();
-        return min;
-      }
-
-      give(v) {
-        this.data.push(v);
-      }
-    }
-  </script>
-  <script>
-    const N = 100;
-    const container = document.getElementById('container');
-    let map;
-
-    let mousedown = false;
-    let clear = false;
-    document.addEventListener('mousedown', (e) => {
-      mousedown = true;
-      clear = (e.which === 3);
+  function sleep(time) {
+    return new Promise((resolve) => {
+      setTimeout(() => resolve(), time);
     });
-    document.addEventListener('mouseup', (e) => { mousedown = false});
-    document.addEventListener('contextmenu', (e) => e.preventDefault());
+  }
 
-    function sleep(time) {
-      return new Promise((resolve) => {
-        setTimeout(() => resolve(), time);
-      });
+  function save() {
+    localStorage.setItem('map', JSON.stringify(map));
+    if (targetPoint) {
+      localStorage.setItem('targetPoint', JSON.stringify(targetPoint));
     }
+  }
+
+  function reset(force = false) {
+    if (force) {
+      map = Array(N * N).fill(0);
+    } else {
+      map = localStorage['map'] ? JSON.parse(localStorage['map']) : Array(N * N).fill(0);
+    }
+    container.innerHTML = "";
+    for (let y = 0; y < N; y++) {
+      for (let x = 0; x < N; x++) {
+        const cell = document.createElement('div');
+        cell.setAttribute('title', `[${x}, ${y}]`);
+        cell.classList.add('cell');
+
+        if (map[N * y + x] === 1) {
+          cell.style.backgroundColor = 'black';
+        }
+
+        cell.addEventListener('mousemove', (e) => {
+          if (mousedown) {
+            if (clear) {
+              cell.style.backgroundColor = '';
+              map[N * y + x] = 0;
+            } else {
+              cell.style.backgroundColor = 'black';
+              map[N * y + x] = 1;
+            }
+          }
+        });
+        cell.addEventListener('dblclick', (e) => {
+          settargetPoint([x, y]);
+        })
+        container.appendChild(cell);
+      }
+    }
+  }
+
+  async function findPath(map, start, end) {
+    let totalCost = 0;
+    const table = Object.create(map);
+    const queue = new MinHeap([start], (a, b) => distance(a) > distance(b));
 
     function distance(a) {
-      return a[0] ** 2 + a[1] ** 2;
+      return ((a[0] - end[0]) ** 2 + (a[1] - end[1]) ** 2);
     }
 
-    function reset(force = false) {
-      console.log('reset');
-      if (force) {
-        map = Array(N*N).fill(0);
-      } else {
-        map = localStorage['map'] ? JSON.parse(localStorage['map']) : Array(N*N).fill(0);
+    async function insert(x, y, prePoint) {
+      if (x >= N || x < 0 || y >= N || y < 0) {
+        return;
       }
-      container.innerHTML = "";
-      for (let y = 0; y < N; y++) {
-        const row = document.createElement('div');
-        for (let x = 0; x < N; x++) {
-          const cell = document.createElement('div');
-          cell.setAttribute('title', `[${x}, ${y}]`);
-          cell.classList.add('cell');
-
-          if (map[N * y + x] === 1) {
-            cell.style.backgroundColor = 'black';
-          }
-
-          cell.addEventListener('mousemove', (e) => {
-            if (mousedown) {
-              if (clear) {
-                cell.style.backgroundColor = '';
-                map[N * y + x] = 0;
-              } else {
-                cell.style.backgroundColor = 'black';
-                map[N * y + x] = 1;
-              }
-            }
-          });
-          row.appendChild(cell);
-        }
-        container.appendChild(row);
+      if (table[N * y + x]) {
+        return;
       }
-    }
-    
-    async function findPath(map, start, end) {
-      container.children[end[1]].children[end[0]].style.backgroundColor = 'red';
-      const table = Object.create(map);
-      const queue = new Sorted([start], (a, b) => distance(a) - distance(b));
-
-      async function insert(x, y, prePoint) {
-        if (x >= N || x < 0 || y >= N || y < 0) {
-          return;
-        }
-        if (map[N * y + x]) {
-          return;
-        }
-        map[N * y + x] = 2;
-        queue.give([x, y]);
-        if (x === end[0] && y === end[1]) {
-        } else {
-          container.children[y].children[x].style.backgroundColor = 'green';
-        }
-        table[y * N + x] = prePoint;
-        await sleep(10);
-      }
-
-      while(queue.length) {
-        let [x, y] = queue.take();
-
-        if (x === end[0] && y === end[1]) {
-          const path = [];
-
-          while (x !== start[0] || y !== start[1]) {
-            path.push(map[y * N + x]);
-            [x, y] = table[y * N + x];
-            container.children[y].children[x].style.backgroundColor = 'purple';
-            await sleep(20);
-          }
-          return path;
-        }
-        await insert(x - 1, y, [x, y]);
-        await insert(x + 1, y, [x, y]);
-        await insert(x, y - 1, [x, y]);
-        await insert(x, y + 1, [x, y]);
-
-        await insert(x - 1, y - 1, [x, y]);
-        await insert(x + 1, y + 1, [x, y]);
-        await insert(x + 1, y - 1, [x, y]);
-        await insert(x - 1, y + 1, [x, y]);
-      }
+      totalCost++;
+      table[y * N + x] = prePoint;
+      container.children[y * N + x].style.backgroundColor = 'lightgreen';
+      queue.give([x, y]);
+      // await sleep(1);
     }
 
-    reset();
-  </script>
-</htm>
+    while (queue.length) {
+      let [x, y] = queue.take();
+
+      if (x === end[0] && y === end[1]) {
+        container.children[end[1] * N + end[0]].style.backgroundColor = 'red';
+        const path = [];
+
+        while (x !== start[0] || y !== start[1]) {
+          path.push(map[y * N + x]);
+          [x, y] = table[y * N + x];
+          container.children[y * N + x].style.backgroundColor = 'purple';
+          await sleep(10);
+        }
+        console.log('path length: ', path.length);
+        console.log('totalCost', totalCost);
+        return path;
+      }
+      await insert(x - 1, y, [x, y]);
+      await insert(x + 1, y, [x, y]);
+      await insert(x, y - 1, [x, y]);
+      await insert(x, y + 1, [x, y]);
+
+      await insert(x - 1, y - 1, [x, y]);
+      await insert(x + 1, y + 1, [x, y]);
+      await insert(x + 1, y - 1, [x, y]);
+      await insert(x - 1, y + 1, [x, y]);
+    }
+  }
+
+  function settargetPoint(p) {
+    if (targetPoint) {
+      container.children[targetPoint[1] * N + targetPoint[0]].style.backgroundColor = 'grey';
+    }
+    targetPoint = p;
+    const targetPointSpan = document.getElementById('targetPoint');
+    targetPointSpan.innerText = `[${targetPoint.join(',')}]`;
+    container.children[targetPoint[1] * N + targetPoint[0]].style.backgroundColor = 'red';
+  }
+
+  reset();
+  if (localStorage['targetPoint']) {
+    settargetPoint(JSON.parse(localStorage['targetPoint']));
+  }
+</script>
+
+</html>
