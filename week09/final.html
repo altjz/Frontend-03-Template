@@ -1,0 +1,344 @@
+<!-- 
+  1. 使用 A* 算法 优化
+  2. 使用 曼哈顿距离计算
+  3. 使用 二叉堆 (最小堆)
+
+  使用说明
+  1. 使用 findPath(map, start, end) 函数
+  2. 或者，输入 Start 和 End，直接点击 FindPath 按钮
+ -->
+ <html>
+  <style>
+    .cell {
+      display: inline-block;
+      line-height: 7px;
+      width: 6px;
+      height: 6px;
+      background-color: gray;
+      border-bottom: 1px solid white;
+      border-right: 1px solid white;
+      vertical-align: top;
+    }
+  
+    #container {
+      width: 701px;
+    }
+  </style>
+  
+  <body>
+    <div id="container"></div>
+    <div>
+      <select id="strategy" onchange="changeStrategy()">
+        <option value="astar">A Star</option>
+        <option value="bf">Best First</option>
+      </select>
+      <button onclick="save()">Save</button>
+      <button onclick="reset(true)">Reset</button>
+      <button onclick="clickFindPath()">Find Path</button>
+      <div>
+        <p>
+          Start: <input id="startPoint" type="text" value="[0,0]" onchange="setStartPoint(this.value)"/>
+        </p>
+        <p>
+          End: <input id="endPoint" type="text" value="[0,0]" onchange="setEndPoint(this.value)"/>
+        </p>
+        <p>
+          Cost: <span id="totalCost"></span>
+        </p>
+        <p>
+          Path: <span id="finalPath"></span>
+        </p>
+      </div>
+    </div>
+  </body>
+  <script>
+  /**
+   * 最小堆
+   */
+   function parent(s) {
+    return s % 2 === 0 ? parseInt(s / 2 - 1) : parseInt((s - 1) / 2);
+  }
+  
+  function left(i) {
+    return i * 2 + 1;
+  }
+  
+  function right(i) {
+    return i * 2 + 2;
+  }
+  
+  class BinaryHeap {
+    constructor(arr, compare) {
+      this.data = arr.slice();
+      this.compare = compare || ((a, b) => a > b);
+      const pLen = parseInt(this.data.length / 2, 10);
+      for (let s = pLen - 1; s >= 0; s--) {
+        this.shiftDown(s);
+      }
+    }
+  
+    get length() {
+      return this.data.length;
+    }
+  
+    swap(a, b) {
+      let tmp = this.data[a];
+      this.data[a] = this.data[b];
+      this.data[b] = tmp;
+    }
+  
+    shiftUp(s) {
+      const d = this.data;
+      while (s > 0 && d[parent(s)] && d[s]) {
+        if (!this.compare(d[parent(s)], d[s])) {
+          break;
+        }
+        this.swap(s, parent(s));
+        s = parent(s);
+      }
+    }
+  
+    shiftDown(s) {
+      const d = this.data;
+      while (left(s) <= d.length && d[left(s)] && d[right(s)]) {
+        const minChildIdx = this.compare(d[left(s)], d[right(s)]) ? right(s) : left(s);
+        if (this.compare(d[s], d[minChildIdx])) {
+          this.swap(s, minChildIdx);
+        }
+        s = minChildIdx;
+      }
+    }
+  
+    take(index = 0) {
+      this.swap(index, this.data.length - 1);
+      const tmp = this.data.pop();
+      this.shiftDown(index);
+      return tmp;
+    }
+  
+    give(value) {
+      this.data.push(value);
+      this.shiftUp(this.data.length - 1);
+    }
+  }
+  </script>
+  <script>
+    const DIRECT_VALUE = 10; // 横竖移动代价
+    const OBLIQUE_VALUE = 14; // 斜移动代价
+    const N = 100;
+    const container = document.getElementById('container');
+    let endPoint;
+    let startPoint;
+    let map;
+    let strategy = 'astar';
+  
+    let mousedown = false;
+    let clear = false;
+    document.addEventListener('mousedown', (e) => {
+      mousedown = true;
+      clear = (e.which === 3);
+    });
+    document.addEventListener('mouseup', (e) => {
+      mousedown = false
+    });
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+  
+    function sleep(time) {
+      return new Promise((resolve) => {
+        setTimeout(() => resolve(), time);
+      });
+    }
+  
+    function save() {
+      localStorage.setItem('map', JSON.stringify(map));
+      if (endPoint) {
+        localStorage.setItem('endPoint', JSON.stringify(endPoint));
+      }
+      if (startPoint) {
+        localStorage.setItem('startPoint', JSON.stringify(startPoint));
+      }
+    }
+  
+    function reset(force = false) {
+      if (force) {
+        map = Array(N * N).fill(0);
+      } else {
+        map = localStorage['map'] ? JSON.parse(localStorage['map']) : Array(N * N).fill(0);
+      }
+      container.innerHTML = "";
+      for (let y = 0; y < N; y++) {
+        for (let x = 0; x < N; x++) {
+          const cell = document.createElement('div');
+          cell.setAttribute('title', `[${x}, ${y}]`);
+          cell.classList.add('cell');
+  
+          if (map[N * y + x] === 1) {
+            cell.style.backgroundColor = 'black';
+          }
+  
+          cell.addEventListener('mousemove', (e) => {
+            if (mousedown) {
+              if (clear) {
+                cell.style.backgroundColor = '';
+                map[N * y + x] = 0;
+              } else {
+                cell.style.backgroundColor = 'black';
+                map[N * y + x] = 1;
+              }
+            }
+          });
+          cell.addEventListener('dblclick', (e) => {
+            setEndPoint([x, y]);
+          })
+          container.appendChild(cell);
+        }
+      }
+    }
+  
+    function manhattanDistance(p1, p2) {
+      return Math.abs(p1[0] - p2[0]) + Math.abs(p1[1] - p2[1]);
+    }
+  
+    function euclideanDistance(p1, p2) {
+      return Math.sqrt((p1[0] - p1[1]) ** 2 + (p1[1] - p2[1]) ** 2);
+    }
+  
+    async function findPath(map, start, end) {
+      save();
+      reset();
+      setStartPoint(start);
+      setEndPoint(end);
+      let totalCost = 0;
+      const table = Object.create(map);
+      table[start[1] * N + start[0]] = {
+        point: start,
+        cost: 0,
+      }
+      const queue = new BinaryHeap([start], (a, b) => distance(a) > distance(b));
+  
+      function distance(p) {
+        if (strategy === 'astar') {
+          return (manhattanDistance(p, end)) * DIRECT_VALUE + table[p[1] * N + p[0]].cost;
+        } else if (strategy === 'bf') {
+          return (manhattanDistance(p, end)) * DIRECT_VALUE;
+        }
+      }
+  
+      async function insert(x, y, prePoint, cost) {
+        if (x >= N || x < 0 || y >= N || y < 0) {
+          return;
+        }
+        if (table[N * y + x] === 1 || table[N * y + x].point) {
+          return;
+        }
+        totalCost++;
+        const preCost = table[prePoint[1] * N + prePoint[0]].cost;
+        table[y * N + x] = {
+          point: prePoint,
+          cost: cost + preCost,
+        };
+        container.children[y * N + x].style.backgroundColor = 'lightgreen';
+        queue.give([x, y]);
+        await sleep(1);
+      }
+  
+      while (queue.length) {
+        let [x, y] = queue.take();
+  
+        if (x === end[0] && y === end[1]) {
+          container.children[end[1] * N + end[0]].style.backgroundColor = 'red';
+          const path = [];
+  
+          while (x !== start[0] || y !== start[1]) {
+            path.push(map[y * N + x]);
+            const { point } = table[y * N + x];
+            [x, y] = point;
+            container.children[y * N + x].style.backgroundColor = 'purple';
+            await sleep(10);
+          }
+          return {
+            totalCost,
+            path,
+          };
+        }
+        await insert(x - 1, y, [x, y], DIRECT_VALUE);
+        await insert(x + 1, y, [x, y], DIRECT_VALUE);
+        await insert(x, y - 1, [x, y], DIRECT_VALUE);
+        await insert(x, y + 1, [x, y], DIRECT_VALUE);
+  
+        await insert(x - 1, y - 1, [x, y], OBLIQUE_VALUE);
+        await insert(x + 1, y + 1, [x, y], OBLIQUE_VALUE);
+        await insert(x + 1, y - 1, [x, y], OBLIQUE_VALUE);
+        await insert(x - 1, y + 1, [x, y], OBLIQUE_VALUE);
+      }
+    }
+  
+    function setStartPoint(p) {
+      if (typeof p === 'string') {
+        p = JSON.parse(p);
+      }
+      if (startPoint) {
+        container.children[startPoint[1] * N + startPoint[0]].style.backgroundColor = 'grey';
+      }
+      map[p[1] * N + p[0]] = 0;
+      startPoint = p;
+      const element = document.getElementById('startPoint');
+      element.value = `[${startPoint.join(',')}]`;
+      container.children[startPoint[1] * N + startPoint[0]].style.backgroundColor = 'blue';
+      save();
+    }
+  
+    function setEndPoint(p) {
+      if (typeof p === 'string') {
+        p = JSON.parse(p);
+      }
+      if (endPoint) {
+        container.children[endPoint[1] * N + endPoint[0]].style.backgroundColor = 'grey';
+      }
+      map[p[1] * N + p[0]] = 0;
+      endPoint = p;
+      const element = document.getElementById('endPoint');
+      element.value = `[${endPoint.join(',')}]`;
+      container.children[endPoint[1] * N + endPoint[0]].style.backgroundColor = 'red';
+      save();
+    }
+  
+    function changeStrategy() {
+      const selectStrategy = document.getElementById('strategy');
+      strategy = selectStrategy.value;
+    }
+  
+    function setTotalCost(totalCost) {
+      const element = document.getElementById('totalCost');
+      element.innerHTML = totalCost;
+    }
+  
+    function setFinalPath(path) {
+      const element = document.getElementById('finalPath');
+      element.innerHTML = path.length;
+    }
+  
+    async function clickFindPath() {
+      const { path, totalCost } = await findPath(map, startPoint, endPoint);
+      setTotalCost(totalCost);
+      setFinalPath(path);
+    }
+  
+    function getRandomInt(max) {
+      return Math.floor(Math.random() * Math.floor(max));
+    }
+  
+    reset();
+    if (localStorage['endPoint']) {
+      setEndPoint(JSON.parse(localStorage['endPoint']));
+    } else {
+      setEndPoint([getRandomInt(N), getRandomInt(N)]);
+    }
+    if (localStorage['startPoint']) {
+      setStartPoint(JSON.parse(localStorage['startPoint']));
+    } else {
+      setStartPoint([0, 0]);
+    }
+  </script>
+  
+  </html>

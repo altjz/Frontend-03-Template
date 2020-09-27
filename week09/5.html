@@ -26,73 +26,37 @@
   </div>
 </body>
 <script>
-  /**
-   * 最小堆
-   */
-  function parent(s) {
-    return s % 2 === 0 ? parseInt(s / 2 - 1) : parseInt((s - 1) / 2);
-  }
-
-  function left(i) {
-    return i * 2 + 1;
-  }
-
-  function right(i) {
-    return i * 2 + 2;
-  }
-
-  class MinHeap {
-    constructor(arr, compare) {
-      this.data = arr.slice();
+  class Sorted {
+    constructor(data, compare) {
+      this.data = data.slice();
       this.compare = compare || ((a, b) => a > b);
-      const pLen = parseInt(this.data.length / 2, 10);
-      for (let s = pLen - 1; s >= 0; s--) {
-        this.shiftDown(s);
-      }
     }
 
     get length() {
       return this.data.length;
     }
 
-    swap(a, b) {
-      let tmp = this.data[a];
-      this.data[a] = this.data[b];
-      this.data[b] = tmp;
-    }
-
-    shiftUp(s) {
-      const d = this.data;
-      while (s > 0 && d[parent(s)] && d[s]) {
-        if (!this.compare(d[parent(s)], d[s])) {
-          break;
-        }
-        this.swap(s, parent(s));
-        s = parent(s);
+    take() {
+      if (!this.data.length) {
+        return;
       }
-    }
+      let min = this.data[0];
+      let minIndex = 0;
 
-    shiftDown(s) {
-      const d = this.data;
-      while (left(s) <= d.length && d[left(s)] && d[right(s)]) {
-        const minChildIdx = this.compare(d[left(s)], d[right(s)]) ? right(s) : left(s);
-        if (this.compare(d[s], d[minChildIdx])) {
-          this.swap(s, minChildIdx);
+      for (let i = 0; i < this.data.length; i++) {
+        if (this.compare(min, this.data[i])) {
+          min = this.data[i];
+          minIndex = i;
         }
-        s = minChildIdx;
       }
+
+      this.data[minIndex] = this.data[this.data.length - 1];
+      this.data.pop();
+      return min;
     }
 
-    take(index = 0) {
-      this.swap(index, this.data.length - 1);
-      const tmp = this.data.pop();
-      this.shiftDown(index);
-      return tmp;
-    }
-
-    give(value) {
-      this.data.push(value);
-      this.shiftUp(this.data.length - 1);
+    give(v) {
+      this.data.push(v);
     }
   }
 </script>
@@ -165,7 +129,7 @@
   async function findPath(map, start, end) {
     let totalCost = 0;
     const table = Object.create(map);
-    const queue = new MinHeap([start], (a, b) => distance(a) > distance(b));
+    const queue = new Sorted([start], (a, b) => distance(a) > distance(b));
 
     function distance(a) {
       return ((a[0] - end[0]) ** 2 + (a[1] - end[1]) ** 2);
