@@ -24,11 +24,11 @@
 
 使用 AStar
 
-![Astar](./img/Astar.gif)
+![Astar](./img/AStar.gif)
 
 普通的 启发式
 
-![Astar](./img/BestFirst.gif)
+![BestFirst](./img/BestFirst.gif)
 
 可以看到使用了 Astar 之后，必定能找到最优解，但并不是 Cost 最小的
 
