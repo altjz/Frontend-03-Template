@@ -15,3 +15,11 @@
 - 如果触发绘画，或者布局，无论是 CSS 或者是 JS 动画都需要在 *主进程*  中解决，其实他们本质上没有太大区别
 
 - CSS3 的动画在不同浏览器上会有兼容性问题，但是 JavaScript 大多没有问题 （就算有也可以使用 Polyfill 解决）
+
+## 作业说明
+
+貌似 `webpack-dev-server` 和 `webpack 5` 有点冲突，导致一直用不了，因此我直接用了 `http-server`
+
+1. cd animation
+2. npm i
+3. npm run start

@@ -65,7 +65,7 @@ export class Timeline {
     this.state = 'Inited';
     this[PAUSE_TIME] = 0;
     this[ANIMATIONS] = new Set();
-    this[START_TIME] = Date.now();
+    this[START_TIME] = new Map();
     this[PAUSE_START] = 0;
     this[TICK_HANDLER] = null;
   }
