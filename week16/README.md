@@ -20,7 +20,7 @@
 
 目前的组件化，是需要自己手动 render。
 
-按照课程原来的写法，这里在 `appendChild` 的时候，就已经触发了 `render`
+按照课程原来的写法，其实是在 render 的时候，手动的触发 DOM 更新
 
 ```javascript
   // 原来的写法
@@ -29,11 +29,11 @@
   for (const r of this[ATTRIBUTE].src) {
       const child = document.createElement('div');
       child.style.backgroundImage = `url('${r.img}')`;
-      this.root.appendChild(child); // 在这里的时候触发了 render
+      this.root.appendChild(child); // 在这里的时候触发了 DOM 更新
     }
 ```
 
-如果需要提供 `children` 的传入，需要手动的调用 `render()`，因为 `jsx` 的解析拿到的只是函数
+如果需要提供 `children` 的传入，就需要手动的调用 `render()`，因为 `jsx` 的解析拿到的只是 `createElement` 转义后的代码
 
 ```javascript
   // 组件化 children
