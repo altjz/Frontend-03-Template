@@ -29,7 +29,7 @@ const a = <Carousel
   data={d}
   onChange={event => console.log(event.detail.position)}
   onClick={event => {
-    console.log(event.detail.position, event.detail.data);
+    console.log('onclick', event.detail.position, event.detail.data);
     window.open(event.detail.data.url);
   }}
   >

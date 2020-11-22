@@ -80,7 +80,7 @@ export class Carousel extends Component {
     this.root.addEventListener('tap', event => {
       this.triggerEvent('click', {
         position: this[STATE].position,
-        data: this[ATTRIBUTE].src[this[STATE].position],
+        data: this[ATTRIBUTE].data[this[STATE].position],
       });
     });
 
