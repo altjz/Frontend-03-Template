@@ -1,0 +1,28 @@
+{
+  "name": "browser",
+  "version": "1.0.0",
+  "description": "",
+  "main": "client.js",
+  "author": "altjz",
+  "license": "ISC",
+  "scripts": {
+    "test": "mocha --require @babel/register",
+    "coverage": "nyc npm run test"
+  },
+  "dependencies": {
+    "css": "^3.0.0",
+    "images": "^3.2.3"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.8",
+    "@babel/preset-env": "^7.12.7",
+    "@babel/register": "^7.12.1",
+    "@istanbuljs/nyc-config-babel": "^3.0.0",
+    "babel-plugin-istanbul": "^6.0.0",
+    "mocha": "^8.2.1",
+    "nyc": "^15.1.0"
+  }
+}
