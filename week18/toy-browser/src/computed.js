@@ -194,12 +194,12 @@ function match(element, selector) {
   if (element.tagName !== selector) {
     return false;
   }
-  const index = selector[0].indexOf('.');
-  if (index > -1) { // 如果包含class，类似：span.myclass
-    const cls = selector[0].substring(index + 1, selector[0].length); // 提取 class
-    const attr = element.attributes.find((_attr) => _attr.name === 'class' && (_attr.value === cls || _attr.value.split(' ').find((c) => c === cls))); // 如果 class 有多个，则 split 空格再查找
-    return attr !== undefined; // 如果 class 不匹配，返回 false
-  }
+  // const index = selector[0].indexOf('.');
+  // if (index > -1) { // 如果包含class，类似：span.myclass
+  //   const cls = selector[0].substring(index + 1, selector[0].length); // 提取 class
+  //   const attr = element.attributes.find((_attr) => _attr.name === 'class' && (_attr.value === cls || _attr.value.split(' ').find((c) => c === cls))); // 如果 class 有多个，则 split 空格再查找
+  //   return attr !== undefined; // 如果 class 不匹配，返回 false
+  // }
   return true;
 }
 

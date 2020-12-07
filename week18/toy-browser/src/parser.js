@@ -1,5 +1,4 @@
 import { addCssRules, computeCss } from './computed';
-import { layout } from './layout';
 
 const EOF = Symbol('EOF');
 
@@ -45,7 +44,7 @@ function emit(token) {
       if (top.tagName === 'style') {
         addCssRules(top.children[0].content);
       }
-      layout(top);
+      // layout(top);
       stack.pop();
     }
     currentTextNode = null;

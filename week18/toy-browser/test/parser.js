@@ -66,10 +66,51 @@ describe("parse html:", () => {
   });
   it('global style', () => {
     const tree = parseHtml(`<style>
-  body {
+  body div{
     font-size:15px;
   }
-</style>`);
+  body>div{
+    line-size:5px;
+  }
+  div>p{
+    color: #FFF;
+  }
+  div p {
+    color: #FFF;
+  }
+  div+div>a{
+    font-size:20px;
+  }
+  div~div>p{
+    font-size:25px;
+  }
+  div~a{}
+  div p.myp{}
+  #ppp{}
+  body div.abc.cba{}
+  div #atest{}
+  div #noid {}
+  div>p>span {}
+  #noid + span {}
+  body ul>li.myli+li{}
+  body ul>li.llliii+li{}
+  body ul>li.llliii~li{}
+  body ul>li.llliii>li{}
+</style>
+<html>
+<body>
+  <ul><li class="myli"></li></ul>
+  <ul><li class="llliii"></li><li>hhhwww</li></ul>
+  <div></div>
+  <div id="atest">
+  <a href="#">A Test</a>
+  </div>
+  <div class="abc">
+    <p id="ppp" class="myp">hello world</p>
+  </div>
+</body>
+</html>
+`);
     console.log(tree);
     assert.strictEqual(tree.children[0].tagName, 'style');
     assert.strictEqual(tree.children[0].children.length, 1);
