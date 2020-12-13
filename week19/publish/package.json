@@ -1,0 +1,16 @@
+{
+  "name": "publish-tool",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node publish.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "archiver": "^5.1.0",
+    "dotenv": "^8.2.0",
+    "open": "^7.3.0"
+  }
+}
